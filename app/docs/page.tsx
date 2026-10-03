@@ -46,6 +46,18 @@ export default function Docs() {
           <p className='text-sm mb-3'>HMAC-SHA256 signed via X-SubSphere-Signature. Auto-retry with exponential backoff.</p>
         </section>
         <section>
+          <h2 className='text-2xl font-bold mb-4'>Payment links</h2>
+          <Code>{'POST /api/v1/payment_links\nX-API-Key: sk_test_...\n\n{ "amount": 5000, "description": "Design work" }\n\n// Returns { url: "http://.../pay/<token>" }'}</Code>
+        </section>
+        <section>
+          <h2 className='text-2xl font-bold mb-4'>Coupons</h2>
+          <Code>{'POST /api/v1/coupons\nX-API-Key: sk_test_...\n\n{ "code": "LAUNCH20", "discountType": "percent", "discountValue": 20 }\n\n// Apply at checkout:\nPOST /api/v1/checkout_sessions\n{ "paymentId": "cm...", "couponCode": "LAUNCH20" }'}</Code>
+        </section>
+        <section>
+          <h2 className='text-2xl font-bold mb-4'>Ledger</h2>
+          <Code>{'GET /api/v1/ledger/balance\nX-API-Key: sk_test_...\n// { "balanceCents": 25000 }\n\nGET /api/v1/ledger/entries?limit=50'}</Code>
+        </section>
+        <section>
           <h2 className='text-2xl font-bold mb-4'>SDK</h2>
           <Code>{'npm install @subsphere/node\n\nconst { SubSphere } = require("@subsphere/node");\nconst ss = new SubSphere("sk_test_...");\nconst p = await ss.payments.create({ amount: 5000, method: "raast" });'}</Code>
         </section>
