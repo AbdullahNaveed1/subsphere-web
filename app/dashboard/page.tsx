@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api, clearAuth } from '@/lib/api';
@@ -30,6 +30,10 @@ export default function Dashboard() {
     setNewKey(r.data.rawKey);
     localStorage.setItem('apiKey', r.data.rawKey);
     load();
+  }
+
+  async function replayEvent(id: string) {
+    try { await api.post('/webhooks/events/' + id + '/replay'); load(); } catch (e: any) { setMsg('Replay failed'); }
   }
 
   async function syncPayments() {
@@ -103,10 +107,11 @@ export default function Dashboard() {
         <h2 className="font-semibold mb-3">Webhook events</h2>
         {events.length === 0 && <p className="text-sm text-gray-500">None yet.</p>}
         {events.map((e) => (
-          <div key={e.id} className="flex justify-between text-sm border-b py-2">
+          <div key={e.id} className="flex justify-between items-center text-sm border-b py-2">
             <span>{e.type}</span>
             <span>{e.status}</span>
             <span>attempts: {e.attempts}</span>
+            <button onClick={() => replayEvent(e.id)} className="text-xs text-blue-600 underline">Replay</button>
           </div>
         ))}
       </section>
