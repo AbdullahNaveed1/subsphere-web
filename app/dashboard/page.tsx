@@ -50,6 +50,7 @@ export default function Dashboard() {
     ['Customers', '/customers'],
     ['Payment links', '/payment-links'],
     ['Coupons', '/coupons'],
+    ['Ledger', '/ledger'],
     ['API keys', '/api-keys'],
     ['Webhooks', '/webhooks'],
     ['Refunds', '/refunds'],
