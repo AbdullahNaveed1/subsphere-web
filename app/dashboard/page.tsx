@@ -59,6 +59,7 @@ export default function Dashboard() {
         <div className="flex gap-3 text-sm">
           <a href="/docs">Docs</a>
           <a href="/refunds">Refunds</a>
+          <a href="/webhooks">Webhooks</a>
           <a href="/checkout">Checkout</a>
           <button onClick={logout} className="text-gray-600">Logout</button>
         </div>
