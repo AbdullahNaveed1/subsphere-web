@@ -63,6 +63,7 @@ export default function Dashboard() {
           <a href="/customers">Customers</a>
           <a href="/api-keys">API keys</a>
           <a href="/revenue">Revenue</a>
+          <a href="/subscriptions">Subscriptions</a>
           <a href="/checkout">Checkout</a>
           <button onClick={logout} className="text-gray-600">Logout</button>
         </div>
