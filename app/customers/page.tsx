@@ -1,6 +1,7 @@
-﻿'use client';
+'use client';
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
+import { Header } from '@/components/Header';
 
 export default function CustomersPage() {
   const [list, setList] = useState<any[]>([]);
@@ -22,7 +23,7 @@ export default function CustomersPage() {
       setMsg('Customer created');
       setEmail(''); setName('');
       load();
-    } catch (e: any) { setMsg(e?.response?.data?.message || 'Failed'); }
+    } catch (err: any) { setMsg(err?.response?.data?.message || 'Failed'); }
   }
 
   async function remove(id: string) {
@@ -32,28 +33,49 @@ export default function CustomersPage() {
   }
 
   return (
-    <main className='p-6 max-w-4xl mx-auto space-y-6'>
-      <nav className='flex gap-4 text-sm'>
-        <a href='/dashboard'>Dashboard</a>
-        <a href='/customers' className='font-semibold'>Customers</a>
-      </nav>
-      <h1 className='text-2xl font-bold'>Customers</h1>
-      {msg && <p className='text-sm text-blue-600'>{msg}</p>}
-      <form onSubmit={create} className='border p-4 rounded space-y-3'>
-        <input className='w-full border p-2 rounded' placeholder='Email' value={email} onChange={e => setEmail(e.target.value)} />
-        <input className='w-full border p-2 rounded' placeholder='Name (optional)' value={name} onChange={e => setName(e.target.value)} />
-        <button className='bg-black text-white px-4 py-2 rounded text-sm'>Add customer</button>
-      </form>
-      <section className='border p-4 rounded'>
-        {list.length === 0 && <p className='text-sm text-gray-500'>No customers yet.</p>}
-        {list.map(c => (
-          <div key={c.id} className='flex justify-between items-center text-sm border-b py-2'>
-            <span>{c.email}</span>
-            <span>{c.name || '-'}</span>
-            <button onClick={() => remove(c.id)} className='text-xs text-red-600'>Delete</button>
+    <main className="min-h-screen">
+      <Header active="/customers" />
+      <div className="w-full px-6 sm:px-8 py-6 sm:py-8 space-y-6">
+        <div>
+          <h1 className="ss-h1">Customers</h1>
+          <p className="ss-sub">Every customer your organization has records for</p>
+        </div>
+
+        {msg && <div className="ss-badge-accent p-3 rounded-lg text-sm">{msg}</div>}
+
+        <form onSubmit={create} className="ss-card space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input className="ss-input" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
+            <input className="ss-input" placeholder="Name (optional)" value={name} onChange={e => setName(e.target.value)} />
           </div>
-        ))}
-      </section>
+          <button className="ss-btn ss-btn-primary">Add customer</button>
+        </form>
+
+        <section className="ss-card">
+          <h2 className="ss-h2">All customers</h2>
+          {list.length === 0 ? (
+            <p className="text-sm text-[var(--fg-muted)]">No customers yet.</p>
+          ) : (
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
+              <table className="ss-table min-w-[500px]">
+                <thead>
+                  <tr><th>Email</th><th>Name</th><th>Created</th><th></th></tr>
+                </thead>
+                <tbody>
+                  {list.map(c => (
+                    <tr key={c.id}>
+                      <td>{c.email}</td>
+                      <td>{c.name || '—'}</td>
+                      <td className="text-[var(--fg-dim)] text-xs">{new Date(c.createdAt).toLocaleDateString()}</td>
+                      <td><button onClick={() => remove(c.id)} className="ss-btn ss-btn-danger text-xs px-2 py-1">Delete</button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </div>
     </main>
   );
 }

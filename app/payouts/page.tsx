@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
+import { Header } from '@/components/Header';
 
 export default function PayoutsPage() {
   const [list, setList] = useState<any[]>([]);
@@ -30,37 +31,58 @@ export default function PayoutsPage() {
   }
 
   return (
-    <main className='p-6 max-w-4xl mx-auto space-y-6'>
-      <nav className='flex gap-4 text-sm'>
-        <a href='/dashboard'>Dashboard</a>
-        <a href='/payouts' className='font-semibold'>Payouts</a>
-      </nav>
-      <h1 className='text-2xl font-bold'>Payouts</h1>
-      <div className='border p-4 rounded'>
-        <p className='text-xs text-gray-500'>Available balance</p>
-        <p className='text-2xl font-bold'>PKR {(balance / 100).toFixed(2)}</p>
-      </div>
-      {msg && <p className='text-sm text-blue-600'>{msg}</p>}
-      <form onSubmit={create} className='border p-4 rounded space-y-3'>
-        <input className='w-full border p-2 rounded' placeholder='Amount in paisa (e.g. 50000 = PKR 500)' value={amount} onChange={e => setAmount(e.target.value)} />
-        <input className='w-full border p-2 rounded' placeholder='Destination (IBAN or Raast ID)' value={destination} onChange={e => setDestination(e.target.value)} />
-        <select className='w-full border p-2 rounded' value={method} onChange={e => setMethod(e.target.value)}>
-          <option value='raast'>Raast</option>
-          <option value='iban'>IBAN bank transfer</option>
-        </select>
-        <button className='bg-black text-white px-4 py-2 rounded text-sm'>Request payout</button>
-      </form>
-      <section className='border p-4 rounded'>
-        {list.length === 0 && <p className='text-sm text-gray-500'>No payouts yet.</p>}
-        {list.map(p => (
-          <div key={p.id} className='flex justify-between items-center text-sm border-b py-2 gap-3'>
-            <code className='text-xs'>{p.reference}</code>
-            <span>PKR {(p.amountCents / 100).toFixed(2)}</span>
-            <span className='text-xs text-gray-500'>{p.destination.slice(0, 20)}...</span>
-            <span className={p.status === 'paid' ? 'text-green-600' : 'text-yellow-600'}>{p.status}</span>
+    <main className="min-h-screen">
+      <Header active="/payouts" />
+      <div className="w-full px-6 sm:px-8 py-6 sm:py-8 space-y-6">
+        <div>
+          <h1 className="ss-h1">Payouts</h1>
+          <p className="ss-sub">Send funds to Raast IDs or bank accounts</p>
+        </div>
+
+        <div className="ss-card">
+          <p className="ss-kpi-label">Available balance</p>
+          <p className="ss-kpi-value">PKR {(balance / 100).toFixed(2)}</p>
+        </div>
+
+        {msg && <div className="ss-badge-accent p-3 rounded-lg text-sm">{msg}</div>}
+
+        <form onSubmit={create} className="ss-card space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input className="ss-input" placeholder="Amount in paisa" value={amount} onChange={e => setAmount(e.target.value)} required />
+            <input className="ss-input" placeholder="IBAN or Raast ID" value={destination} onChange={e => setDestination(e.target.value)} required />
           </div>
-        ))}
-      </section>
+          <select className="ss-input" value={method} onChange={e => setMethod(e.target.value)}>
+            <option value='raast'>Raast</option>
+            <option value='iban'>IBAN bank transfer</option>
+          </select>
+          <button className="ss-btn ss-btn-primary">Request payout</button>
+        </form>
+
+        <section className="ss-card">
+          <h2 className="ss-h2">All payouts</h2>
+          {list.length === 0 ? (
+            <p className="text-sm text-[var(--fg-muted)]">No payouts yet.</p>
+          ) : (
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
+              <table className="ss-table min-w-[600px]">
+                <thead>
+                  <tr><th>Reference</th><th>Amount</th><th>Destination</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                  {list.map(p => (
+                    <tr key={p.id}>
+                      <td><span className="ss-code">{p.reference}</span></td>
+                      <td>PKR {(p.amountCents / 100).toFixed(2)}</td>
+                      <td className="text-[var(--fg-muted)] text-xs">{p.destination.slice(0, 24)}…</td>
+                      <td><span className={'ss-badge ' + (p.status === 'paid' ? 'ss-badge-success' : 'ss-badge-warn')}>{p.status}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </div>
     </main>
   );
 }

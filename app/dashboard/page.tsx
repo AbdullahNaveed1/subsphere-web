@@ -1,14 +1,15 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { api, clearAuth } from '@/lib/api';
+import { api } from '@/lib/api';
+import Link from 'next/link';
+import { Header } from '@/components/Header';
 
 export default function Dashboard() {
   const [revenue, setRevenue] = useState<any>(null);
   const [sub, setSub] = useState<any>(null);
   const [payments, setPayments] = useState<any[]>([]);
   const [events, setEvents] = useState<any[]>([]);
-  const [msg, setMsg] = useState('');
   const router = useRouter();
 
   async function load() {
@@ -29,110 +30,100 @@ export default function Dashboard() {
     load();
   }, []);
 
-  async function syncPayments() {
-    setMsg('Syncing...');
-    try {
-      const r = await api.post('/v1/payments/sync');
-      setMsg('Synced: ' + r.data.updated.length + ' updated / ' + r.data.checked + ' checked');
-      load();
-    } catch (e: any) {
-      setMsg('Sync failed: ' + (e?.response?.data?.message || e.message));
-    }
-  }
-
-  function logout() {
-    clearAuth();
-    router.push('/login');
-  }
-
-  const nav = [
-    ['Subscriptions', '/subscriptions'],
-    ['Customers', '/customers'],
-    ['Payment links', '/payment-links'],
-    ['Coupons', '/coupons'],
-    ['Ledger', '/ledger'],
-    ['Payouts', '/payouts'],
-    ['API keys', '/api-keys'],
-    ['Webhooks', '/webhooks'],
-    ['Refunds', '/refunds'],
-    ['Invoices', '/invoices'],
-    ['Revenue', '/revenue'],
-    ['Docs', '/docs'],
-  ];
-
   return (
-    <main className='p-6 max-w-5xl mx-auto space-y-6'>
-      <div className='flex justify-between items-center'>
-        <h1 className='text-2xl font-bold'>Dashboard</h1>
-        <button onClick={logout} className='text-sm text-gray-600'>Logout</button>
+    <main className="min-h-screen">
+      <Header active="/dashboard" />
+
+      <div className="w-full px-6 sm:px-8 py-6 sm:py-8 space-y-6">
+        <div>
+          <h1 className="ss-h1">Dashboard</h1>
+          <p className="ss-sub">Overview of your payments, subscriptions, and activity</p>
+        </div>
+
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          <div className="ss-card p-4 sm:p-5">
+            <p className="ss-kpi-label">All time</p>
+            <p className="ss-kpi-value text-lg sm:text-2xl">PKR {((revenue?.totalCents || 0) / 100).toFixed(2)}</p>
+          </div>
+          <div className="ss-card p-4 sm:p-5">
+            <p className="ss-kpi-label">Last 30d</p>
+            <p className="ss-kpi-value text-lg sm:text-2xl">PKR {((revenue?.last30Cents || 0) / 100).toFixed(2)}</p>
+          </div>
+          <div className="ss-card p-4 sm:p-5">
+            <p className="ss-kpi-label">Payments</p>
+            <p className="ss-kpi-value text-lg sm:text-2xl">{revenue?.counts?.payments || 0}</p>
+          </div>
+          <div className="ss-card p-4 sm:p-5">
+            <p className="ss-kpi-label">Failed</p>
+            <p className="ss-kpi-value text-lg sm:text-2xl" style={{ color: 'var(--danger)' }}>{revenue?.counts?.failed || 0}</p>
+          </div>
+        </section>
+
+        <section className="ss-card">
+          <h2 className="ss-h2">Current subscription</h2>
+          {sub ? (
+            <div>
+              <p className="font-medium">{sub.plan?.name} — PKR {((sub.plan?.priceCents || 0) / 100).toFixed(2)}/{sub.plan?.interval}</p>
+              <p className="text-xs text-[var(--fg-dim)] mt-1">Status: {sub.status} · Renews {new Date(sub.currentPeriodEnd).toLocaleDateString()}</p>
+            </div>
+          ) : (
+            <p className="text-sm text-[var(--fg-muted)]">No active subscription. <Link href="/subscriptions" className="text-[var(--accent-hover)] hover:underline">Choose a plan</Link></p>
+          )}
+        </section>
+
+        <section className="ss-card">
+          <h2 className="ss-h2">Recent payments</h2>
+          {payments.length === 0 ? (
+            <p className="text-sm text-[var(--fg-muted)]">No payments yet.</p>
+          ) : (
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
+              <table className="ss-table min-w-[600px]">
+                <thead>
+                  <tr><th>ID</th><th>Amount</th><th>Method</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                  {payments.map((p) => (
+                    <tr key={p.id}>
+                      <td><span className="ss-code">{p.id.slice(0, 12)}</span></td>
+                      <td>PKR {(p.amount / 100).toFixed(2)}</td>
+                      <td><span className="ss-badge">{p.method}</span></td>
+                      <td>
+                        <span className={'ss-badge ' + (p.status === 'succeeded' ? 'ss-badge-success' : p.status === 'failed' ? 'ss-badge-danger' : '')}>
+                          {p.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+
+        <section className="ss-card">
+          <h2 className="ss-h2">Recent webhook events</h2>
+          {events.length === 0 ? (
+            <p className="text-sm text-[var(--fg-muted)]">No events yet.</p>
+          ) : (
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
+              <table className="ss-table min-w-[500px]">
+                <thead>
+                  <tr><th>Type</th><th>Status</th><th>Attempts</th></tr>
+                </thead>
+                <tbody>
+                  {events.map((e) => (
+                    <tr key={e.id}>
+                      <td><span className="ss-code">{e.type}</span></td>
+                      <td><span className={'ss-badge ' + (e.status === 'delivered' ? 'ss-badge-success' : e.status === 'failed' ? 'ss-badge-danger' : 'ss-badge-warn')}>{e.status}</span></td>
+                      <td>{e.attempts}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
       </div>
-
-      <nav className='flex flex-wrap gap-3 text-sm'>
-        {nav.map(([label, href]) => (
-          <a key={href} href={href} className='border px-3 py-1 rounded hover:bg-gray-50'>{label}</a>
-        ))}
-      </nav>
-
-      {msg && <p className='text-sm text-blue-600'>{msg}</p>}
-
-      <section className='grid grid-cols-4 gap-3'>
-        <div className='border p-4 rounded'>
-          <p className='text-xs text-gray-500'>Revenue (all time)</p>
-          <p className='text-xl font-bold'>PKR {((revenue?.totalCents || 0) / 100).toFixed(2)}</p>
-        </div>
-        <div className='border p-4 rounded'>
-          <p className='text-xs text-gray-500'>Last 30d</p>
-          <p className='text-xl font-bold'>PKR {((revenue?.last30Cents || 0) / 100).toFixed(2)}</p>
-        </div>
-        <div className='border p-4 rounded'>
-          <p className='text-xs text-gray-500'>Payments</p>
-          <p className='text-xl font-bold'>{revenue?.counts?.payments || 0}</p>
-        </div>
-        <div className='border p-4 rounded'>
-          <p className='text-xs text-gray-500'>Failed</p>
-          <p className='text-xl font-bold text-red-600'>{revenue?.counts?.failed || 0}</p>
-        </div>
-      </section>
-
-      <section className='border p-4 rounded'>
-        <h2 className='font-semibold mb-2'>Current subscription</h2>
-        {sub ? (
-          <div>
-            <p className='font-semibold'>{sub.plan?.name} — PKR {((sub.plan?.priceCents || 0) / 100).toFixed(2)}/{sub.plan?.interval}</p>
-            <p className='text-xs text-gray-500 mt-1'>Status: {sub.status} • Renews {new Date(sub.currentPeriodEnd).toLocaleDateString()}</p>
-          </div>
-        ) : (
-          <p className='text-sm text-gray-500'>No active subscription. <a href='/subscriptions' className='text-blue-600 underline'>Choose a plan</a></p>
-        )}
-      </section>
-
-      <section className='border p-4 rounded'>
-        <div className='flex justify-between items-center mb-3'>
-          <h2 className='font-semibold'>Recent payments</h2>
-          <button onClick={syncPayments} className='text-xs bg-blue-600 text-white px-3 py-1 rounded'>Sync status</button>
-        </div>
-        {payments.length === 0 && <p className='text-sm text-gray-500'>No payments yet.</p>}
-        {payments.map((p) => (
-          <div key={p.id} className='flex justify-between text-sm border-b py-2'>
-            <code>{p.id.slice(0, 12)}</code>
-            <span>PKR {(p.amount / 100).toFixed(2)}</span>
-            <span>{p.method}</span>
-            <span className={p.status === 'succeeded' ? 'text-green-600' : p.status === 'failed' ? 'text-red-600' : 'text-gray-500'}>{p.status}</span>
-          </div>
-        ))}
-      </section>
-
-      <section className='border p-4 rounded'>
-        <h2 className='font-semibold mb-3'>Recent webhook events</h2>
-        {events.length === 0 && <p className='text-sm text-gray-500'>None yet.</p>}
-        {events.map((e) => (
-          <div key={e.id} className='flex justify-between text-sm border-b py-2'>
-            <span>{e.type}</span>
-            <span>{e.status}</span>
-            <span>attempts: {e.attempts}</span>
-          </div>
-        ))}
-      </section>
     </main>
   );
 }

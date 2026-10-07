@@ -1,6 +1,7 @@
-﻿'use client';
+'use client';
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
+import { Header } from '@/components/Header';
 
 export default function Refunds() {
   const [list, setList] = useState<any[]>([]);
@@ -26,39 +27,56 @@ export default function Refunds() {
       setMsg('Refund created');
       setAmount(''); setReason('');
       load();
-    } catch (e: any) {
-      setMsg(e?.response?.data?.message || 'Failed');
-    }
+    } catch (e: any) { setMsg(e?.response?.data?.message || 'Failed'); }
   }
 
   return (
-    <main className='p-6 max-w-4xl mx-auto space-y-6'>
-      <nav className='flex gap-4 text-sm'>
-        <a href='/dashboard'>Dashboard</a>
-        <a href='/refunds' className='font-semibold'>Refunds</a>
-      </nav>
-      <h1 className='text-2xl font-bold'>Refunds</h1>
-      {msg && <p className='text-sm text-blue-600'>{msg}</p>}
-      <form onSubmit={create} className='border p-4 rounded space-y-3'>
-        <select className='w-full border p-2 rounded' value={paymentId} onChange={e => setPaymentId(e.target.value)}>
-          <option value=''>-- select payment --</option>
-          {payments.map(p => <option key={p.id} value={p.id}>{p.id.slice(0,12)} - PKR {(p.amount/100).toFixed(2)}</option>)}
-        </select>
-        <input className='w-full border p-2 rounded' placeholder='Amount (paisa)' value={amount} onChange={e => setAmount(e.target.value)} />
-        <input className='w-full border p-2 rounded' placeholder='Reason (optional)' value={reason} onChange={e => setReason(e.target.value)} />
-        <button className='bg-black text-white px-4 py-2 rounded text-sm'>Create refund</button>
-      </form>
-      <section className='border p-4 rounded'>
-        <h2 className='font-semibold mb-3'>Recent refunds</h2>
-        {list.length === 0 && <p className='text-sm text-gray-500'>None yet.</p>}
-        {list.map(r => (
-          <div key={r.id} className='flex justify-between text-sm border-b py-2'>
-            <code>{r.id.slice(0,12)}</code>
-            <span>PKR {(r.amount/100).toFixed(2)}</span>
-            <span>{r.status}</span>
+    <main className="min-h-screen">
+      <Header active="/refunds" />
+      <div className="w-full px-6 sm:px-8 py-6 sm:py-8 space-y-6">
+        <div>
+          <h1 className="ss-h1">Refunds</h1>
+          <p className="ss-sub">Return funds to your customers</p>
+        </div>
+
+        {msg && <div className="ss-badge-accent p-3 rounded-lg text-sm">{msg}</div>}
+
+        <form onSubmit={create} className="ss-card space-y-3">
+          <select className="ss-input" value={paymentId} onChange={e => setPaymentId(e.target.value)} required>
+            <option value=''>— select a succeeded payment —</option>
+            {payments.map(p => <option key={p.id} value={p.id}>{p.id.slice(0,12)} — PKR {(p.amount/100).toFixed(2)}</option>)}
+          </select>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input className="ss-input" placeholder='Amount in paisa' value={amount} onChange={e => setAmount(e.target.value)} required />
+            <input className="ss-input" placeholder='Reason (optional)' value={reason} onChange={e => setReason(e.target.value)} />
           </div>
-        ))}
-      </section>
+          <button className="ss-btn ss-btn-primary">Create refund</button>
+        </form>
+
+        <section className="ss-card">
+          <h2 className="ss-h2">Recent refunds</h2>
+          {list.length === 0 ? (
+            <p className="text-sm text-[var(--fg-muted)]">None yet.</p>
+          ) : (
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
+              <table className="ss-table min-w-[500px]">
+                <thead>
+                  <tr><th>ID</th><th>Amount</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                  {list.map(r => (
+                    <tr key={r.id}>
+                      <td><span className="ss-code">{r.id.slice(0,12)}</span></td>
+                      <td>PKR {(r.amount/100).toFixed(2)}</td>
+                      <td><span className={'ss-badge ' + (r.status === 'succeeded' ? 'ss-badge-success' : r.status === 'failed' ? 'ss-badge-danger' : 'ss-badge-warn')}>{r.status}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </div>
     </main>
   );
 }

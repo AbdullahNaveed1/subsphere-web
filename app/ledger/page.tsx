@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
+import { Header } from '@/components/Header';
 
 export default function LedgerPage() {
   const [balance, setBalance] = useState(0);
@@ -12,46 +13,47 @@ export default function LedgerPage() {
   }, []);
 
   return (
-    <main className='p-6 max-w-4xl mx-auto space-y-6'>
-      <nav className='flex gap-4 text-sm'>
-        <a href='/dashboard'>Dashboard</a>
-        <a href='/ledger' className='font-semibold'>Ledger</a>
-      </nav>
-      <h1 className='text-2xl font-bold'>Ledger</h1>
+    <main className="min-h-screen">
+      <Header active="/ledger" />
+      <div className="w-full px-6 sm:px-8 py-6 sm:py-8 space-y-6">
+        <div>
+          <h1 className="ss-h1">Ledger</h1>
+          <p className="ss-sub">Append-only record of every cent in and out</p>
+        </div>
 
-      <div className='border p-6 rounded'>
-        <p className='text-xs text-gray-500'>Current balance</p>
-        <p className='text-3xl font-bold'>PKR {(balance / 100).toFixed(2)}</p>
+        <div className="ss-card">
+          <p className="ss-kpi-label">Current balance</p>
+          <p className="ss-kpi-value">PKR {(balance / 100).toFixed(2)}</p>
+        </div>
+
+        <section className="ss-card">
+          <h2 className="ss-h2">Entries</h2>
+          {entries.length === 0 ? (
+            <p className="text-sm text-[var(--fg-muted)]">No entries yet.</p>
+          ) : (
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
+              <table className="ss-table min-w-[700px]">
+                <thead>
+                  <tr><th>Type</th><th>Amount</th><th>Balance</th><th>Description</th><th>Date</th></tr>
+                </thead>
+                <tbody>
+                  {entries.map(e => (
+                    <tr key={e.id}>
+                      <td><span className="ss-badge">{e.type}</span></td>
+                      <td style={{ color: e.amountCents >= 0 ? 'var(--success)' : 'var(--danger)' }}>
+                        {e.amountCents >= 0 ? '+' : ''}PKR {(e.amountCents / 100).toFixed(2)}
+                      </td>
+                      <td>PKR {(e.balanceAfter / 100).toFixed(2)}</td>
+                      <td className="text-[var(--fg-muted)] text-xs">{e.description || '—'}</td>
+                      <td className="text-[var(--fg-dim)] text-xs">{new Date(e.createdAt).toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
       </div>
-
-      <section className='border p-4 rounded'>
-        <h2 className='font-semibold mb-3'>Entries</h2>
-        {entries.length === 0 && <p className='text-sm text-gray-500'>No entries yet.</p>}
-        <table className='w-full text-sm'>
-          <thead>
-            <tr className='border-b text-left text-xs text-gray-500'>
-              <th className='p-2'>Type</th>
-              <th className='p-2'>Amount</th>
-              <th className='p-2'>Balance</th>
-              <th className='p-2'>Description</th>
-              <th className='p-2'>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {entries.map((e) => (
-              <tr key={e.id} className='border-b'>
-                <td className='p-2'>{e.type}</td>
-                <td className={e.amountCents >= 0 ? 'p-2 text-green-600' : 'p-2 text-red-600'}>
-                  {e.amountCents >= 0 ? '+' : ''}PKR {(e.amountCents / 100).toFixed(2)}
-                </td>
-                <td className='p-2'>PKR {(e.balanceAfter / 100).toFixed(2)}</td>
-                <td className='p-2 text-gray-500 text-xs'>{e.description || '-'}</td>
-                <td className='p-2 text-gray-400 text-xs'>{new Date(e.createdAt).toLocaleString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
     </main>
   );
 }

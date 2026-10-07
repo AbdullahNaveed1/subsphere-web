@@ -1,6 +1,7 @@
-﻿'use client';
+'use client';
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
+import { Header } from '@/components/Header';
 
 const ALL_SCOPES = ['payments:read','payments:write','refunds:read','refunds:write','customers:read','customers:write'];
 
@@ -40,47 +41,78 @@ export default function ApiKeysPage() {
   }
 
   return (
-    <main className='p-6 max-w-4xl mx-auto space-y-6'>
-      <nav className='flex gap-4 text-sm'>
-        <a href='/dashboard'>Dashboard</a>
-        <a href='/api-keys' className='font-semibold'>API keys</a>
-      </nav>
-      <h1 className='text-2xl font-bold'>API keys</h1>
-      {msg && <p className='text-sm text-red-600'>{msg}</p>}
-      {newKey && (
-        <div className='bg-yellow-50 border border-yellow-300 p-3 rounded text-xs'>
-          <p className='font-semibold mb-1'>Copy now - shown once:</p>
-          <code className='break-all'>{newKey}</code>
+    <main className="min-h-screen">
+      <Header active="/api-keys" />
+      <div className="w-full px-6 sm:px-8 py-6 sm:py-8 space-y-6">
+        <div>
+          <h1 className="ss-h1">API keys</h1>
+          <p className="ss-sub">Authenticate your requests with test and live keys</p>
         </div>
-      )}
-      <form onSubmit={create} className='border p-4 rounded space-y-3'>
-        <input className='w-full border p-2 rounded' placeholder='Key name' value={name} onChange={e => setName(e.target.value)} />
-        <select className='w-full border p-2 rounded' value={mode} onChange={e => setMode(e.target.value)}>
-          <option value='test'>test</option>
-          <option value='live'>live</option>
-        </select>
-        <div className='text-xs text-gray-500'>Scopes</div>
-        <div className='flex flex-wrap gap-2'>
-          {ALL_SCOPES.map(s => (
-            <button type='button' key={s} onClick={() => toggle(s)} className={scopes.includes(s) ? 'text-xs px-2 py-1 rounded border bg-black text-white' : 'text-xs px-2 py-1 rounded border'}>
-              {s}
-            </button>
-          ))}
-        </div>
-        <button className='bg-black text-white px-4 py-2 rounded text-sm'>Create key</button>
-      </form>
-      <section className='border p-4 rounded'>
-        {keys.length === 0 && <p className='text-sm text-gray-500'>No keys yet.</p>}
-        {keys.map(k => (
-          <div key={k.id} className='flex justify-between items-center text-sm border-b py-2'>
-            <span>{k.name}</span>
-            <code className='text-gray-500'>{k.prefix}</code>
-            <span className={k.mode === 'live' ? 'text-red-600' : 'text-blue-600'}>{k.mode}</span>
-            <span className='text-xs text-gray-500'>{k.scopes}</span>
-            <button onClick={() => revoke(k.id)} className='text-xs text-red-600'>Revoke</button>
+
+        {msg && <div className="ss-badge-danger p-3 rounded-lg text-sm">{msg}</div>}
+
+        {newKey && (
+          <div className="ss-badge-warn p-3 rounded-lg">
+            <p className="font-medium mb-1">Copy now — shown once</p>
+            <code className="ss-code break-all">{newKey}</code>
           </div>
-        ))}
-      </section>
+        )}
+
+        <form onSubmit={create} className="ss-card space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input className="ss-input" placeholder="Key name" value={name} onChange={e => setName(e.target.value)} required />
+            <select className="ss-input" value={mode} onChange={e => setMode(e.target.value)}>
+              <option value='test'>test</option>
+              <option value='live'>live</option>
+            </select>
+          </div>
+          <div>
+            <p className="text-xs text-[var(--fg-dim)] uppercase tracking-wider mb-2">Scopes</p>
+            <div className="flex flex-wrap gap-2">
+              {ALL_SCOPES.map(s => (
+                <button
+                  type='button'
+                  key={s}
+                  onClick={() => toggle(s)}
+                  className={'text-xs px-3 py-1 rounded-full border transition ' +
+                    (scopes.includes(s)
+                      ? 'bg-[var(--accent)] border-[var(--accent)] text-white'
+                      : 'border-[var(--border)] text-[var(--fg-muted)] hover:border-[var(--border-hover)]')}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+          <button className="ss-btn ss-btn-primary">Create key</button>
+        </form>
+
+        <section className="ss-card">
+          <h2 className="ss-h2">All keys</h2>
+          {keys.length === 0 ? (
+            <p className="text-sm text-[var(--fg-muted)]">No keys yet.</p>
+          ) : (
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
+              <table className="ss-table min-w-[700px]">
+                <thead>
+                  <tr><th>Name</th><th>Prefix</th><th>Mode</th><th>Scopes</th><th></th></tr>
+                </thead>
+                <tbody>
+                  {keys.map(k => (
+                    <tr key={k.id}>
+                      <td>{k.name}</td>
+                      <td><span className="ss-code">{k.prefix}</span></td>
+                      <td><span className={'ss-badge ' + (k.mode === 'live' ? 'ss-badge-danger' : 'ss-badge-accent')}>{k.mode}</span></td>
+                      <td className="text-xs text-[var(--fg-muted)]">{k.scopes}</td>
+                      <td><button onClick={() => revoke(k.id)} className="ss-btn ss-btn-danger text-xs px-2 py-1">Revoke</button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </div>
     </main>
   );
 }

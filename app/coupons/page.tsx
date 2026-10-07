@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
+import { Header } from '@/components/Header';
 
 export default function CouponsPage() {
   const [list, setList] = useState<any[]>([]);
@@ -39,37 +40,55 @@ export default function CouponsPage() {
   }
 
   return (
-    <main className='p-6 max-w-4xl mx-auto space-y-6'>
-      <nav className='flex gap-4 text-sm'>
-        <a href='/dashboard'>Dashboard</a>
-        <a href='/coupons' className='font-semibold'>Coupons</a>
-      </nav>
-      <h1 className='text-2xl font-bold'>Coupons</h1>
-      {msg && <p className='text-sm text-blue-600'>{msg}</p>}
-      <form onSubmit={create} className='border p-4 rounded space-y-3'>
-        <input className='w-full border p-2 rounded' placeholder='Code (e.g. LAUNCH20)' value={code} onChange={e => setCode(e.target.value)} />
-        <div className='flex gap-3'>
-          <select className='border p-2 rounded' value={type} onChange={e => setType(e.target.value)}>
-            <option value='percent'>Percent off</option>
-            <option value='amount'>Fixed amount (paisa)</option>
-          </select>
-          <input className='border p-2 rounded flex-1' placeholder={type === 'percent' ? '20' : '5000'} value={value} onChange={e => setValue(e.target.value)} />
-          <input className='border p-2 rounded flex-1' placeholder='Max redemptions (optional)' value={max} onChange={e => setMax(e.target.value)} />
+    <main className="min-h-screen">
+      <Header active="/coupons" />
+      <div className="w-full px-6 sm:px-8 py-6 sm:py-8 space-y-6">
+        <div>
+          <h1 className="ss-h1">Coupons</h1>
+          <p className="ss-sub">Discount codes your customers can redeem at checkout</p>
         </div>
-        <button className='bg-black text-white px-4 py-2 rounded text-sm'>Create coupon</button>
-      </form>
-      <section className='border p-4 rounded'>
-        {list.length === 0 && <p className='text-sm text-gray-500'>No coupons yet.</p>}
-        {list.map(c => (
-          <div key={c.id} className='flex justify-between items-center text-sm border-b py-2 gap-3'>
-            <code className='font-bold'>{c.code}</code>
-            <span>{c.discountType === 'percent' ? c.discountValue + '%' : 'PKR ' + (c.discountValue / 100).toFixed(2)}</span>
-            <span className='text-xs text-gray-500'>{c.redemptions}{c.maxRedemptions ? '/' + c.maxRedemptions : ''} used</span>
-            <span className={c.active ? 'text-green-600' : 'text-gray-400'}>{c.active ? 'active' : 'revoked'}</span>
-            {c.active && <button onClick={() => revoke(c.id)} className='text-xs text-red-600'>Revoke</button>}
+
+        {msg && <div className="ss-badge-accent p-3 rounded-lg text-sm">{msg}</div>}
+
+        <form onSubmit={create} className="ss-card space-y-3">
+          <input className="ss-input" placeholder="Code (e.g. LAUNCH20)" value={code} onChange={e => setCode(e.target.value)} required />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <select className="ss-input" value={type} onChange={e => setType(e.target.value)}>
+              <option value='percent'>Percent off</option>
+              <option value='amount'>Fixed amount (paisa)</option>
+            </select>
+            <input className="ss-input" placeholder={type === 'percent' ? '20' : '5000'} value={value} onChange={e => setValue(e.target.value)} required />
+            <input className="ss-input" placeholder='Max redemptions (optional)' value={max} onChange={e => setMax(e.target.value)} />
           </div>
-        ))}
-      </section>
+          <button className="ss-btn ss-btn-primary">Create coupon</button>
+        </form>
+
+        <section className="ss-card">
+          <h2 className="ss-h2">All coupons</h2>
+          {list.length === 0 ? (
+            <p className="text-sm text-[var(--fg-muted)]">No coupons yet.</p>
+          ) : (
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
+              <table className="ss-table min-w-[600px]">
+                <thead>
+                  <tr><th>Code</th><th>Discount</th><th>Used</th><th>Status</th><th></th></tr>
+                </thead>
+                <tbody>
+                  {list.map(c => (
+                    <tr key={c.id}>
+                      <td><span className="ss-code">{c.code}</span></td>
+                      <td>{c.discountType === 'percent' ? c.discountValue + '%' : 'PKR ' + (c.discountValue / 100).toFixed(2)}</td>
+                      <td>{c.redemptions}{c.maxRedemptions ? '/' + c.maxRedemptions : ''}</td>
+                      <td><span className={'ss-badge ' + (c.active ? 'ss-badge-success' : '')}>{c.active ? 'active' : 'revoked'}</span></td>
+                      <td>{c.active && <button onClick={() => revoke(c.id)} className="ss-btn ss-btn-danger text-xs px-2 py-1">Revoke</button>}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </div>
     </main>
   );
 }
